@@ -1,8 +1,17 @@
 {
-"name": "clip-bot",
-"version": "1.0.0",
-"description": "My First Discord Bot",
-"main": "bot.js",
-"author": "Your Name",
-"dependencies": {}
+  "name": "clip-bot",
+  "version": "1.1.0",
+  "description": "Discord Bot that will remove all unwaned twitch clips from selected discord rooms.",
+  "main": "bot.js",
+  "author": "Aku Inu",
+  "dependencies": {
+    "discord.io": "https://github.com/woor/discord.io/tarball/gateway_v6"
+  },
+  "devDependencies": {
+    "nodemon": "^1.18.4"
+  },
+  "nodemonConfig": {
+    "ignore": ["config.json"],
+    "verbose": true
+  }
 }

@@ -32,32 +32,34 @@ bot.on('message', function (user, userID, channelID, message, evt) {
         var cmd = args[0];
         args = args.splice(1);
         switch(cmd) {
-          case 'addStreamer':
-            addStreamer(channelID, args[0])
+          case 'info':
             bot.sendMessage({
               to: channelID,
-              message: config.rules[channelID].allowedStreamers
+              message: info(channelID)
+            });
+            break;
+          case 'addStreamer':
+            bot.sendMessage({
+              to: channelID,
+              message: addStreamer(channelID, args[0])
             });
             break;
           case 'addChannel':
-            addChannel(channelID, args[0]);
             bot.sendMessage({
               to: channelID,
-              message: config.rules[channelID]
+              message: addChannel(channelID, args[0])
             });
             break;
           case 'removeStreamer':
-            removeStreamer(channelID, args[0]);
             bot.sendMessage({
               to: channelID,
-              message: config.rules[channelID].allowedStreamers
+              message: removeStreamer(channelID, args[0])
             });
             break;
           case 'removeChannel':
-            removeChannel(channelID);
             bot.sendMessage({
               to: channelID,
-              message: "Channel has been removed form the watch list."
+              message: removeChannel(channelID)
             });
             break;
            }
@@ -123,21 +125,47 @@ function isServerOwner(userID, channelID){
   return userID === bot.servers[bot.channels[channelID].guild_id].owner_id;
 }
 
+function getAllowedStreamersString(channelID){
+  return config.rules[channelID].allowedStreamers.join(', ');
+}
+
+function info(channelID){
+  if (inWatchList) {
+    return "Channel is in watchlist. Allowed streamers: " + getAllowedStreamersString(channelID);
+  }
+  return "Current channel is not is watchlist.";
+}
+
 function addStreamer(channelID, streamer){
   streamer = streamer.trim().toLowerCase();
-  if (config.rules[channelID].allowedStreamers.indexOf(streamer) == -1) {
-    config.rules[channelID].allowedStreamers.push(streamer);
-    saveConfig();
+  if (inWatchList(channelID)) {
+    if (config.rules[channelID].allowedStreamers.indexOf(streamer) == -1) {
+      config.rules[channelID].allowedStreamers.push(streamer);
+      saveConfig();
+      return "Streamer " + streamer + " has been added to Allowed Streamers in this channel.";
+    }
+    return "Streamer " + streamer + " is alreaddy in Allowed Streamers in this channel.";
   }
+  return "This Channel is not in watchlist. Use !addChannel <streamer>";
 }
 
 function removeStreamer(channelID, streamer){
   streamer = streamer.trim().toLowerCase();
-  var index = config.rules[channelID].allowedStreamers.indexOf(streamer);
-  if (index !== -1) {
-    config.rules[channelID].allowedStreamers.splice(index, 1);
-    saveConfig();
+  if (inWatchList(channelID)) {
+    var index = config.rules[channelID].allowedStreamers.indexOf(streamer);
+    if (index !== -1) {
+      config.rules[channelID].allowedStreamers.splice(index, 1);
+      if (config.rules[channelID].allowedStreamers.length === 0) {
+        removeChannel(channelID);
+        return "Streamer " + streamer + " was last allowed streamer, removed channel form watchlist.";
+      }else {
+        saveConfig();
+        return "Streamer " + streamer + " has been removed to Allowed Streamers in this channel.";
+      }
+    }
+    return "Streamer " + streamer + "'s clips are not allowed here.";
   }
+  return "This Channel is not in watchlist.";
 }
 
 function addChannel(channelID, streamer){
@@ -146,12 +174,15 @@ function addChannel(channelID, streamer){
     let rule = {"allowedStreamers":[streamer]};
     config.rules[channelID] = rule;
     saveConfig();
+    return "Channel added to watchlist. Allowed streamer: " + streamer;
   }
+  return "Channel already in watchlist. Allowed streamers: " + getAllowedStreamersString(channelID) + "\n\r To add use !addStreamer <streamer>";
 }
 
 function removeChannel(channelID){
   delete config.rules[channelID];
   saveConfig();
+  return "Channel has been removed from the watchlist.";
 }
 
 function saveConfig(){
