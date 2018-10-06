@@ -1,0 +1,19 @@
+{
+  "name": "clip-bot",
+  "version": "1.0.0",
+  "description": "Discord Bot that will remove all unwaned twitch clips from selected discord rooms.",
+  "main": "bot.js",
+  "author": "Aku Inu",
+  "dependencies": {
+    "discord.js": "^11.4.2"
+  },
+  "devDependencies": {
+    "nodemon": "^1.18.4"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "config.json"
+    ],
+    "verbose": true
+  }
+}
